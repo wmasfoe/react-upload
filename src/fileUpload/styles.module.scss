@@ -1,0 +1,27 @@
+.wrapper {
+  display: flex;
+  flex-flow: column nowrap;
+
+  justify-content: center;
+  align-items: center;
+
+  .menu {
+    margin-bottom: 20px;
+  }
+
+  .select {
+    height: 60px;
+    line-height: 60px;
+  }
+
+  .upload {
+    width: 150px;
+    height: 60px;
+    border: none;
+    outline: none;
+  }
+
+  .img {
+    width: 200px;
+  }
+}

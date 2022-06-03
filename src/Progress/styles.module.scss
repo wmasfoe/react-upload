@@ -1,0 +1,13 @@
+.wrapper {
+  width: 100%;
+  min-width: 200px;
+  height: 6px;
+  border: 1px solid lightgray;
+  box-sizing: border-box;
+  border-radius: 5px;
+  overflow: hidden;
+  .bar {
+    height: 4px;
+    background-color: #61dafb;
+  }
+}
