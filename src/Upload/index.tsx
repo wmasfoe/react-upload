@@ -13,7 +13,7 @@ const Upload = () => {
     {
       isHack ?
       <FileUpload/>:
-      <InputUpload/>
+      <InputUpload progress={true} multiple={true} />
     }
   </>;
 }
