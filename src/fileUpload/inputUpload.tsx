@@ -8,36 +8,44 @@ interface UploadProps extends UploadBaseParams{
   fileType?: 'img' | 'jpg' | 'png' | 'jpeg' | 'webp'
 }
 
+// TODO 支持 进度条、多选、限制文件类型
 const InputUpload = (props: UploadProps) => {
   const { multiple, progress, fileType = 'jpg' } = props
 
+  const [selectedFile, setSelectedFile] = useState<FileList | null>(null)
   const inputFileRef = useRef<HTMLInputElement | null>(null)
   const [url, setUrl] = useState<string | null>(null)
 
-  // 读取图片生成 formData
-  async function readImage(files: FileList) {
-    const file = files[0]
+  // 读取图片生成 file 对象 和 base64url
+  async function readImage(files?: FileList): Promise<{
+    file: File,
+    base64Url: string | undefined
+  }> {
 
-    const fileName = file.name
-
-    if(file.type.indexOf("image") == 0){
-      // 读取图片实例
-      return new Promise((resolve => {
-        const reader = new FileReader();
-        // 将图片转换为base64码
-        reader.readAsDataURL(file);
-        reader.onload = function(e){
-          setUrl(e.target.result as string)
-
-          const formData = createFormData(fileName, file)
-          resolve(formData)
-        }
-      }))
+    const computedFiles = selectedFile || files
+    // setState 是异步，在这里无法取到
+    if(computedFiles instanceof FileList) {
+      const file = computedFiles[0]
+      if(file.type.indexOf("image") == 0){
+        // 读取图片实例
+        return new Promise((resolve => {
+          const reader = new FileReader();
+          // 将图片转换为base64码
+          reader.readAsDataURL(file);
+          reader.onload = function(e){
+            // 返回 file 的 blob 和 base64
+            resolve({
+              file,
+              base64Url: e.target.result
+            })
+          }
+        }))
+      }
     }
   }
 
   // 不借助 form 表单，生成 form data
-  function createFormData(name: string, file: File) {
+  function createFormData(file: File) {
     const formData = new FormData()
     formData.append('file', file)
     return formData
@@ -45,17 +53,22 @@ const InputUpload = (props: UploadProps) => {
 
   async function onChange (event: InputEvent) {
     const fileList = inputFileRef.current?.files
+    setSelectedFile(fileList as FileList | null)
     if(fileList instanceof FileList) {
-      const res = await readImage(fileList)
-
-      const uploadRes = await axios.post('http://localhost:4000/upload', res)
-      console.log(uploadRes)
-      return res
+      const {
+        base64Url
+      } = await readImage(fileList)
+      if(typeof base64Url === 'string') {
+        setUrl(base64Url)
+      }
     }
   }
 
-  function onUpload() {
-
+  async function onUpload() {
+    const {file} = await readImage()
+    const formData = createFormData(file)
+    const uploadRes = await axios.post('http://localhost:4000/upload', formData)
+    console.log(uploadRes)
   }
 
   return <div className={styles.wrapper}>
