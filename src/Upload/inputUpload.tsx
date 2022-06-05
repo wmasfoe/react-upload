@@ -12,10 +12,11 @@ interface UploadProps extends UploadBaseParams{
 const InputUpload = (props: UploadProps) => {
   const { multiple, progress, fileType = 'jpg' } = props
 
+
   const [selectedFile, setSelectedFile] = useState<FileList | null>(null)
   const inputFileRef = useRef<HTMLInputElement | null>(null)
   const [url, setUrl] = useState<string | null>(null)
-  const [ scale, setScale ] = useState(0)
+  const [scale, setScale] = useState(0)
 
   // 读取图片生成 file 对象 和 base64url
   async function readImage(files?: FileList): Promise<{
@@ -24,7 +25,6 @@ const InputUpload = (props: UploadProps) => {
   }> {
 
     const computedFiles = selectedFile || files
-    // setState 是异步，在这里无法取到
     if(computedFiles instanceof FileList) {
       const file = computedFiles[0]
       if(file.type.indexOf("image") == 0){
@@ -92,11 +92,11 @@ const InputUpload = (props: UploadProps) => {
       <input style={{display: 'none'}} id='file-upload' multiple={multiple} ref={inputFileRef} onChange={onChange} type="file"/>
       <button onClick={onUpload} className={styles.upload}>upload</button>
     </div>
-      <div>
-        {
-          progress && <Progress scale={scale} />
-        }
-      </div>
+    <div>
+      {
+        progress && <Progress scale={scale} />
+      }
+    </div>
     {
       url &&<img src={url} alt="" className={styles.img}/>
     }
