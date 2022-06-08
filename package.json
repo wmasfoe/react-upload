@@ -12,7 +12,8 @@
     "react": "^18.0.0",
     "react-dom": "^18.0.0",
     "sass": "^1.52.2",
-    "sass-loader": "^13.0.0"
+    "sass-loader": "^13.0.0",
+    "ulid": "^2.3.0"
   },
   "devDependencies": {
     "@types/react": "^18.0.0",
