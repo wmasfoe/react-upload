@@ -1,4 +1,4 @@
-import { useRef, LegacyRef } from "react";
+import { useRef, LegacyRef, memo } from "react";
 
 // 使用 js 的能力实现文件上传
 const FileUpload = () => {
@@ -53,4 +53,4 @@ const FileUpload = () => {
   );
 };
 
-export default FileUpload;
+export default memo(FileUpload);

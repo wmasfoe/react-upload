@@ -1,4 +1,3 @@
-import {useMemo} from 'react'
 import FileUpload from "./jsUpload";
 import InputUpload from "./inputUpload";
 

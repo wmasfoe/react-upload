@@ -1,8 +1,10 @@
-import {useRef, memo, useState} from 'react'
+import React, {useRef, memo, useState} from 'react'
 import type { UploadBaseParams } from "./types";
 import styles from './styles.module.scss'
 import Progress from "../Progress";
 import axios from 'axios'
+import { imgListToBase64List, filesCreateFormData } from '../utils'
+import useAppendImage from "../hooks/useAppendImage";
 
 interface UploadProps extends UploadBaseParams{
   fileType?: 'img' | 'jpg' | 'png' | 'jpeg' | 'webp'
@@ -12,62 +14,49 @@ interface UploadProps extends UploadBaseParams{
 const InputUpload = (props: UploadProps) => {
   const { multiple, progress, fileType = 'jpg' } = props
 
-
   const [selectedFile, setSelectedFile] = useState<FileList | null>(null)
   const inputFileRef = useRef<HTMLInputElement | null>(null)
   const [url, setUrl] = useState<string | null>(null)
+  const [imgUrlList, setImgUrlList] = useState<string[] | null>(null)
   const [scale, setScale] = useState(0)
+  const {
+    addState: addImg,
+    state: selectedImg,
+  } = useAppendImage([])
 
   // 读取图片生成 file 对象 和 base64url
   async function readImage(files?: FileList): Promise<{
-    file: File,
-    base64Url: string | undefined
+    base64Url: string[]
   }> {
 
     const computedFiles = selectedFile || files
     if(computedFiles instanceof FileList) {
-      const file = computedFiles[0]
-      if(file.type.indexOf("image") == 0){
-        // 读取图片实例
-        return new Promise((resolve => {
-          const reader = new FileReader();
-          // 将图片转换为base64码 TODO 可以考虑 createObjectURL
-          reader.readAsDataURL(file);
-          reader.onload = function(e){
-            // 返回 file 的 blob 和 base64
-            resolve({
-              file,
-              base64Url: e.target.result
-            })
-          }
-        }))
+      // const file = computedFiles[0]
+      const base64List = await imgListToBase64List(computedFiles)
+
+      return {
+        base64Url: base64List
       }
     }
-  }
-
-  // 不借助 form 表单，生成 form data
-  function createFormData(file: File) {
-    const formData = new FormData()
-    formData.append('file', file)
-    return formData
   }
 
   async function onChange (event: InputEvent) {
     const fileList = inputFileRef.current?.files
     setSelectedFile(fileList as FileList | null)
+    if(inputFileRef.current?.files === null || inputFileRef.current?.files === undefined) return
+    addImg(inputFileRef.current?.files as FileList)
     if(fileList instanceof FileList) {
+      // 读图片
       const {
         base64Url
       } = await readImage(fileList)
-      if(typeof base64Url === 'string') {
-        setUrl(base64Url)
-      }
+      setImgUrlList(base64Url)
     }
   }
 
   async function onUpload() {
-    const {file} = await readImage()
-    const formData = createFormData(file)
+    if(selectedFile === null) return
+    const formData = filesCreateFormData(selectedFile)
     const uploadRes = await axios.post('http://localhost:4000/upload', formData, {
       onUploadProgress: (progressEvent) => {
         if(progressEvent.lengthComputable){
@@ -95,6 +84,13 @@ const InputUpload = (props: UploadProps) => {
     <div>
       {
         progress && <Progress scale={scale} />
+      }
+    </div>
+    <div>
+      {
+        imgUrlList?.map(value => (
+          <img src={value} alt="" className={styles.img} />
+        ))
       }
     </div>
     {
